@@ -97,6 +97,7 @@ export function getMidiEvent(status: number, data1: number, data2: number): {
       const t = clamp(deltaTimeMs / transition, 0, 1);
       note.pressure = Math.trunc(lerp(a, b, t));
       if (note === getLatestNote()) {
+         // If multiple notes are playing, use the highest pressure
          const pressure = getHighestPressure();
          println(`PRESSURE! Pressure: ${pressure}, Channel: ${channel}, Transition: ${transition}ms`);
          return { status: 0xB0, data1: PRESSURE_CC, data2: pressure };
