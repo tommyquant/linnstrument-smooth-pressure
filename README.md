@@ -16,7 +16,9 @@ For legato notes, the previous note's pressure will be used as the initial press
 
 ## Installation
 
-See https://www.bitwig.com/support/technical_support/how-do-i-add-a-controller-extension-or-script-17/
+See https://www.bitwig.com/support/technical_support/how-do-i-add-a-controller-extension-or-script-17/.
+
+Note that you'll need to put the Linnstrument into MPE mode. To do this quickly, you can go into **Per-Split Settings > MIDI Mode** and hold **ChPerNote** for a second.
 
 ## Known issues
 
