@@ -9,6 +9,7 @@ function clamp(x, min, max) {
 }
 
 // src/midi.ts
+var PRESSURE_CC = 1;
 var NON_LEGATO_TRANSITION_MS = 100;
 var LEGATO_TRANSITION_FAST_MS = 100;
 var LEGATO_TRANSITION_SLOW_MS = 1e3;
@@ -29,15 +30,25 @@ function getLatestNote() {
   const sorted = Array.from(notes.values()).sort((a, b) => a.timestamp - b.timestamp);
   return sorted[sorted.length - 1];
 }
+function getHighestPressure() {
+  if (notes.size === 0) {
+    return 0;
+  }
+  let highest = 0;
+  for (const note of notes.values()) {
+    highest = Math.max(highest, note.pressure);
+  }
+  return highest;
+}
 function getMidiEvent(status, data1, data2) {
   const channel = status & 15;
   if (isNoteOn(status)) {
     const prev = getLatestNote();
     notes.set(channel, {
       velocity: data2,
-      initialDynamics: prev ? prev.dynamics : data2,
+      initialPressure: prev ? prev.pressure : data2,
       isLegato: prev ? true : false,
-      dynamics: 0,
+      pressure: 0,
       timestamp: Date.now()
     });
     println(`NOTE ON! Note: ${data1}, Velocity: ${data2}`);
@@ -50,17 +61,21 @@ function getMidiEvent(status, data1, data2) {
   }
   if (isChannelPressure(status)) {
     const note = notes.get(channel);
-    if (!note || note !== getLatestNote()) {
+    if (!note) {
       return;
     }
     const deltaTimeMs = Date.now() - note.timestamp;
     const transition = note.isLegato ? lerp(LEGATO_TRANSITION_SLOW_MS, LEGATO_TRANSITION_FAST_MS, note.velocity / 127) : NON_LEGATO_TRANSITION_MS;
-    const a = note.initialDynamics;
+    const a = note.initialPressure;
     const b = data1;
     const t = clamp(deltaTimeMs / transition, 0, 1);
-    note.dynamics = Math.trunc(lerp(a, b, t));
-    println(`PRESSURE! Pressure: ${note.dynamics}, Channel: ${channel}, Transition: ${transition}ms`);
-    return { status: 176, data1: 1, data2: note.dynamics };
+    note.pressure = Math.trunc(lerp(a, b, t));
+    if (note === getLatestNote()) {
+      const pressure = getHighestPressure();
+      println(`PRESSURE! Pressure: ${pressure}, Channel: ${channel}, Transition: ${transition}ms`);
+      return { status: 176, data1: PRESSURE_CC, data2: pressure };
+    }
+    return;
   }
   return { status, data1, data2 };
 }
