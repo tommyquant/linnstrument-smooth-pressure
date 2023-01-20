@@ -1,0 +1,14 @@
+{
+  "name": "linnstrument-smooth-pressure",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "watch": "esbuild ./src/main.ts --outfile=\"./dist/Linnstrument Smooth Pressure.control.js\" --bundle --watch --tree-shaking=false --platform=node"
+  },
+  "keywords": [],
+  "author": "tommyquant",
+  "devDependencies": {
+    "esbuild": "^0.17.2",
+    "typed-bitwig-api": "^17.0.1"
+  }
+}
